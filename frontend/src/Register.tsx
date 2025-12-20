@@ -9,10 +9,26 @@ interface RegisterProps {
 const Register = ({ onNavigateToLogin }: RegisterProps) => {
   const [isSetupMode, setIsSetupMode] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [loading, setLoading] = useState(true); 
+
   const [formData, setFormData] = useState({ fullName: '', email: '', password: '' });
 
-  // ... (השאר כאן את ה-useEffect של ה-checkStatus שלך) ...
-  useEffect(() => { /* הקוד שלך לבדיקת סטטוס */ }, []);
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/auth/status');
+        const data = await response.json();
+        if (data.isSetupRequired) {
+          setIsSetupMode(true);
+        }
+      } catch (error) {
+        console.error("Could not check system status", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkStatus();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -20,14 +36,35 @@ const Register = ({ onNavigateToLogin }: RegisterProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // ... (הקוד שלך לשליחת הטופס) ...
-    // אם הצליח:
-    // setIsSuccess(true);
+    
+    const endpoint = isSetupMode ? '/setup' : '/register';
+    const url = `http://localhost:8080/api/auth${endpoint}`;
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setIsSuccess(true);
+      } else {
+        alert("Action Failed: " + (data.error || "Unknown error"));
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Network Error: Is backend running?");
+    }
   };
 
   if (isSuccess) {
     return <RegistrationSuccess onLoginClick={onNavigateToLogin} />;
   }
+
+  if (loading) return <div className="text-center mt-20">Loading system status...</div>;
 
   return (
     <Layout onNavigateToLogin={onNavigateToLogin}>
