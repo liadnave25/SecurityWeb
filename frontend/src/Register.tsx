@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react';
 import Layout from './Layout';
 import RegistrationSuccess from './RegistrationSuccess';
 
+function getCsrfToken() {
+  return document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+}
+
 interface RegisterProps {
   onNavigateToLogin: () => void;
 }
@@ -43,7 +47,10 @@ const Register = ({ onNavigateToLogin }: RegisterProps) => {
     try {
       const response = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json',
+            'X-XSRF-TOKEN': getCsrfToken() 
+        },
         body: JSON.stringify(formData),
       });
 

@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import Layout from './Layout';
 
+function getCsrfToken() {
+  return document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+}
+
 interface DashboardProps {
   onLogout: () => void;
 }
@@ -58,7 +62,10 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
     e.preventDefault();
     const res = await fetch('http://localhost:8080/api/deals/create', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-XSRF-TOKEN': getCsrfToken() 
+      },
       body: JSON.stringify(newDeal),
       credentials: 'include' 
     });
@@ -78,6 +85,9 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
     try {
         const res = await fetch(`http://localhost:8080/api/deals/${dealId}`, { 
             method: 'DELETE',
+            headers: { 
+                'X-XSRF-TOKEN': getCsrfToken() 
+            },
             credentials: 'include'
         });
         
@@ -160,7 +170,7 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
               {myDeals.map((d: any) => (
                 <li key={d.id} className="text-gray-600 flex justify-between w-1/2">
                     <span>{d.title}</span>
-                    {/* כאן תמיד נוכל למחוק את הדילים של עצמנו ברשימה הפרטית */}
+                    {/* DELETE BUTTON */}
                     <button onClick={() => handleDeleteDeal(d.id)} className="text-red-500 text-xs hover:underline">Delete</button>
                 </li>
               ))}

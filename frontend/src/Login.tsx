@@ -1,5 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; 
 import Layout from './Layout'; 
+
+function getCsrfToken() {
+  return document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+}
 
 interface LoginProps {
   onSwitchToRegister: () => void;
@@ -8,6 +12,12 @@ interface LoginProps {
 
 const Login = ({ onSwitchToRegister, onLoginSuccess }: LoginProps) => {
   const [formData, setFormData] = useState({ email: '', password: '' });
+
+  useEffect(() => {
+    fetch('http://localhost:8080/api/auth/status', { credentials: 'include' })
+      .then(() => console.log("CSRF Token initialized successfully"))
+      .catch(err => console.error("Failed to init CSRF token", err));
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -18,7 +28,10 @@ const Login = ({ onSwitchToRegister, onLoginSuccess }: LoginProps) => {
     try {
       const response = await fetch('http://localhost:8080/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json',
+            'X-XSRF-TOKEN': getCsrfToken()  
+        },
         body: JSON.stringify(formData),
         credentials: 'include',
       });
