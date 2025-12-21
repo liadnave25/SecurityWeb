@@ -27,6 +27,7 @@ We prioritize credential safety by avoiding legacy hashing methods (like MD5 or 
 ### 2. Secure Data Storage & Handling
 
 - **Input Validation:** Strict server-side validation and sanitization are implemented to prevent **SQL Injection** and **Cross-Site Scripting (XSS)**.
+- **CSRF Protection:** State-changing requests are protected against Cross-Site Request Forgery (CSRF) using Spring Security’s CSRF defense (token-based validation), ensuring requests originate from trusted client sessions.
 - **Principle of Least Privilege:** Database connections and application roles are restricted to the minimum necessary permissions.
 - **Data Privacy:** Sensitive user data is handled according to privacy-by-design standards.
 
