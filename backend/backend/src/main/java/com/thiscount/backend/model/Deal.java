@@ -13,6 +13,10 @@ public class Deal {
     private String title;
     private String description;
 
+    // שדה חדש עבור נתיב התמונה המאובטח
+    @Column(name = "image_path")
+    private String imagePath;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User owner;
@@ -25,13 +29,16 @@ public class Deal {
         this.owner = owner;
     }
 
-    // Getters
+    // Getters קיימים
     public Long getId() { return id; }
     public String getTitle() { return title; }
     public String getDescription() { return description; }
     public User getOwner() { return owner; }
 
-    // Setters (Added for Update functionality)
+    // Getter חדש עבור התמונה
+    public String getImagePath() { return imagePath; }
+
+    // Setters קיימים (עבור עדכון פונקציונליות)
     public void setTitle(String title) {
         this.title = title;
     }
@@ -42,5 +49,10 @@ public class Deal {
 
     public void setOwner(User owner) {
         this.owner = owner;
+    }
+
+    // Setter חדש עבור התמונה
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 }

@@ -1,12 +1,13 @@
 # SecurityWeb (ThisCount) - Secure Web Application 🛡️
 
-This project demonstrates a secure web application architecture based on **Java Spring Boot**.
+This project demonstrates a secure web application architecture based on **Java Spring Boot** and **React**.
 
 The primary goal is to implement **Secure SDLC (Software Development Life Cycle)** principles, protecting user data against common vulnerabilities (OWASP Top 10) and ensuring robust authentication.
 
 ## 🚀 Tech Stack
 
 - **Backend:** Java 17, Spring Boot 3.x
+- **Frontend:** React, TypeScript, Vite
 - **Security Framework:** Spring Security
 - **Cryptography:** Argon2 (Password Hashing)
 - **Containerization:** Docker
@@ -24,14 +25,26 @@ We prioritize credential safety by avoiding legacy hashing methods (like MD5 or 
 - **Memory-Hardness:** This algorithm is configured to require significant memory usage, making it highly resistant to GPU-based brute force and rainbow table attacks.
 - **Unique Salting:** Every password is cryptographically salted before hashing.
 
-### 2. Secure Data Storage & Handling
+### 2. Secure File Upload & Validation 📁
+
+To prevent malicious file execution and storage-based attacks:
+
+- **Strict Validation:** Server-side verification of file types, extensions, and sizes using a dedicated **FileValidationService**.
+- **Secure Configuration:** Managed upload properties via **FileUploadConfig** to ensure files are handled within safe directory boundaries.
+
+### 3. Rate Limiting & DoS Protection 🛑
+
+- **Brute Force Mitigation:** Implemented a **RateLimitingService** to restrict the number of requests per user/IP.
+- **Service Stability:** Protects authentication and sensitive API endpoints from automated attacks and resource exhaustion.
+
+### 4. Secure Data Storage & Handling
 
 - **Input Validation:** Strict server-side validation and sanitization are implemented to prevent **SQL Injection** and **Cross-Site Scripting (XSS)**.
-- **CSRF Protection:** State-changing requests are protected against Cross-Site Request Forgery (CSRF) using Spring Security’s CSRF defense (token-based validation), ensuring requests originate from trusted client sessions.
+- **CSRF Protection:** State-changing requests are protected against Cross-Site Request Forgery (CSRF) using Spring Security’s CSRF defense (token-based validation).
 - **Principle of Least Privilege:** Database connections and application roles are restricted to the minimum necessary permissions.
 - **Data Privacy:** Sensitive user data is handled according to privacy-by-design standards.
 
-### 3. Application Security Testing
+### 5. Application Security Testing
 
 The development process included rigorous testing phases:
 
