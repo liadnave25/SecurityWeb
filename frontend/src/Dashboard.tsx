@@ -7,12 +7,12 @@ function getCsrfToken() {
 
 interface DashboardProps {
   onLogout: () => void;
+  onNavigateToAbout?: () => void;
 }
 
-const Dashboard = ({ onLogout }: DashboardProps) => {
+const Dashboard = ({ onLogout, onNavigateToAbout }: DashboardProps) => {
   const [user, setUser] = useState<any>(null);
   const [deals, setDeals] = useState<any[]>([]);
-  const [myDeals, setMyDeals] = useState<any[]>([]);
   const [usersList, setUsersList] = useState<any[]>([]);
   const [newDeal, setNewDeal] = useState({ title: '', description: '' });
   
@@ -35,9 +35,6 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
         
         const roles = JSON.stringify(data.roles || []); 
         
-        if (roles.includes('BUSINESS') || roles.includes('ADMIN')) {
-          fetchMyDeals();
-        }
         if (roles.includes('ADMIN')) {
           fetchUsers();
         }
@@ -52,10 +49,6 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
     if (res.ok) setDeals(await res.json());
   };
 
-  const fetchMyDeals = async () => {
-    const res = await fetch('http://localhost:8080/api/deals/my-deals', { credentials: 'include' });
-    if (res.ok) setMyDeals(await res.json());
-  };
 
   const fetchUsers = async () => {
     const res = await fetch('http://localhost:8080/api/admin/users', { credentials: 'include' });
@@ -88,7 +81,6 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
         setNewDeal({ title: '', description: '' });
         setSelectedFile(null); 
         fetchPublicDeals();
-        fetchMyDeals();
         // הודעת הצלחה קצרה
         alert('Deal Created Successfully!');
       } else {
@@ -114,8 +106,7 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
         });
         
         if (res.ok) {
-            fetchPublicDeals(); 
-            fetchMyDeals();     
+            fetchPublicDeals();
         } else {
             setErrorMessage("Unauthorized: You cannot delete this deal.");
         }
@@ -130,7 +121,7 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
   const myEmail = user.username;
 
   return (
-    <Layout>
+    <Layout onNavigateToAbout={onNavigateToAbout}>
       <div className="max-w-4xl w-full space-y-8 pb-20">
         
         {/* Header Section */}

@@ -8,9 +8,10 @@ function getCsrfToken() {
 
 interface RegisterProps {
   onNavigateToLogin: () => void;
+  onNavigateToAbout?: () => void;
 }
 
-const Register = ({ onNavigateToLogin }: RegisterProps) => {
+const Register = ({ onNavigateToLogin, onNavigateToAbout }: RegisterProps) => {
   const [isSetupMode, setIsSetupMode] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [loading, setLoading] = useState(true); 
@@ -20,7 +21,7 @@ const Register = ({ onNavigateToLogin }: RegisterProps) => {
   useEffect(() => {
     const checkStatus = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/auth/status');
+        const response = await fetch('http://localhost:8080/api/auth/status', { credentials: 'include' });
         const data = await response.json();
         if (data.isSetupRequired) {
           setIsSetupMode(true);
@@ -47,18 +48,18 @@ const Register = ({ onNavigateToLogin }: RegisterProps) => {
     try {
       const response = await fetch(url, {
         method: 'POST',
-        headers: { 
+        headers: {
             'Content-Type': 'application/json',
-            'X-XSRF-TOKEN': getCsrfToken() 
+            'X-XSRF-TOKEN': getCsrfToken()
         },
         body: JSON.stringify(formData),
+        credentials: 'include',
       });
-
-      const data = await response.json();
 
       if (response.ok) {
         setIsSuccess(true);
       } else {
+        const data = await response.json().catch(() => ({}));
         alert("Action Failed: " + (data.error || "Unknown error"));
       }
     } catch (error) {
@@ -74,7 +75,7 @@ const Register = ({ onNavigateToLogin }: RegisterProps) => {
   if (loading) return <div className="text-center mt-20">Loading system status...</div>;
 
   return (
-    <Layout onNavigateToLogin={onNavigateToLogin}>
+    <Layout onNavigateToLogin={onNavigateToLogin} onNavigateToAbout={onNavigateToAbout}>
       <div 
         className={`bg-white rounded-2xl p-8 sm:p-12 w-full max-w-lg shadow-2xl transition-all duration-500 ${isSetupMode ? 'border-2 border-thiscount-blue-primary' : ''}`}
         style={{boxShadow: '0 20px 25px -5px rgba(59, 130, 246, 0.2), 0 10px 10px -5px rgba(59, 130, 246, 0.1)'}}

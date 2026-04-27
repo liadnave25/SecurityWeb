@@ -46,11 +46,17 @@ To prevent malicious file execution and storage-based attacks:
 
 ### 5. Application Security Testing
 
-The development process included rigorous testing phases:
+The project includes a comprehensive test suite covering both backend and frontend layers, combining **White Box Unit Tests** and **Black Box Integration Tests** using the **AAA pattern** (Arrange / Act / Assert).
 
-- **Security Unit Tests:** Verifying that the authentication logic correctly rejects invalid credentials and handles edge cases.
-- **Integration Testing:** Ensuring secure data flow between the Client, Controller, and Database layers.
-- **Vulnerability Checks:** Automated tests to detect security misconfigurations in the Spring Boot context.
+**Backend (JUnit 5 + Mockito)**
+
+- **`FileValidationServiceTest`** — White box unit test. Uses `@Mock FileUploadConfig` and `@InjectMocks FileValidationService` with Mockito. Covers all branches in `validate()`: oversized files, null/missing extension, disallowed extension, and Tika magic-byte detection that catches executables masquerading as images.
+- **`RateLimitingServiceTest`** — White box unit test. No mocks — instantiates `RateLimitingService` directly to verify real Bucket4j behavior: bucket creation, cache hits (same instance returned), first 3 requests allowed, 4th request blocked, and per-user bucket isolation.
+- **`AuthenticationControllerIntegrationTest`** — Black box integration test. Uses `@WebMvcTest(AuthController.class)` + `@Import(SecurityConfig.class)` to load the full security pipeline (CSRF, Argon2, `DaoAuthenticationProvider`) without a database. `@MockBean` stubs only `CustomUserDetailsService` and `AuthService`. Tests: valid credentials return 200, wrong password returns 401, unknown email returns 401 (no user enumeration), and missing CSRF token returns 403.
+
+**Frontend (Vitest + React Testing Library)**
+
+- **`FileUploadComponent.test.tsx`** — White box unit test. Mocks `global.fetch` with `vi.fn()` to control network responses. Tests: form renders with all `data-testid` elements, filename displays after file selection, backend error message shown on 400 response, form resets and `onSuccess` called on 200 response, generic error shown when fetch throws (server down), and submit button disabled with "Processing..." text while request is in flight.
 
 ---
 

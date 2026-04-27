@@ -7,10 +7,11 @@ function getCsrfToken() {
 
 interface LoginProps {
   onSwitchToRegister: () => void;
-  onLoginSuccess?: () => void; 
+  onLoginSuccess?: () => void;
+  onNavigateToAbout?: () => void;
 }
 
-const Login = ({ onSwitchToRegister, onLoginSuccess }: LoginProps) => {
+const Login = ({ onSwitchToRegister, onLoginSuccess, onNavigateToAbout }: LoginProps) => {
   const [formData, setFormData] = useState({ email: '', password: '' });
 
   useEffect(() => {
@@ -36,15 +37,15 @@ const Login = ({ onSwitchToRegister, onLoginSuccess }: LoginProps) => {
         credentials: 'include',
       });
 
-      const data = await response.json();
-      
       if (response.ok) {
+        const data = await response.json();
         if (onLoginSuccess) {
             onLoginSuccess();
         } else {
             alert("Login Successful! Welcome " + data.user);
         }
       } else {
+        const data = await response.json().catch(() => ({}));
         alert("Login Failed: " + (data.error || "Unknown error"));
       }
     } catch (error) {
@@ -54,7 +55,7 @@ const Login = ({ onSwitchToRegister, onLoginSuccess }: LoginProps) => {
   };
 
   return (
-    <Layout onNavigateToLogin={() => {}} onNavigateToRegister={onSwitchToRegister}>
+    <Layout onNavigateToLogin={() => {}} onNavigateToAbout={onNavigateToAbout}>
        {/* ... אותו HTML שיש לך כבר ... */}
        <div className="bg-white rounded-2xl p-8 sm:p-12 w-full max-w-lg shadow-2xl" style={{boxShadow: '0 20px 25px -5px rgba(59, 130, 246, 0.2), 0 10px 10px -5px rgba(59, 130, 246, 0.1)'}}>
             <h2 className="text-3xl font-bold mb-2 text-center text-thiscount-text-primary">Welcome Back</h2>

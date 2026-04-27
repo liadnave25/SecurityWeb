@@ -2,10 +2,10 @@
 interface LayoutProps {
   children: any;
   onNavigateToLogin?: () => void;
-  onNavigateToRegister?: () => void;
+  onNavigateToAbout?: () => void;
 }
 
-const Layout = ({ children, onNavigateToLogin, onNavigateToRegister }: LayoutProps) => {
+const Layout = ({ children, onNavigateToLogin, onNavigateToAbout }: LayoutProps) => {
   return (
     <div className="flex flex-col min-h-screen bg-thiscount-gray-light font-sans text-gray-700">
       {/* Header */}
@@ -15,15 +15,20 @@ const Layout = ({ children, onNavigateToLogin, onNavigateToRegister }: LayoutPro
             <span className="text-blue-600">This</span><span className="text-gray-800">Count</span>
           </div>
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#" className="text-gray-600 hover:text-thiscount-blue-primary font-medium">About</a>
-            <a href="#" className="text-gray-600 hover:text-thiscount-blue-primary font-medium">For Businesses</a>
-            <a href="#" className="text-gray-600 hover:text-thiscount-blue-primary font-medium">Help</a>
-            <button 
-              onClick={onNavigateToLogin}
-              className="px-5 py-2 text-gray-800 border border-gray-200 rounded-lg hover:bg-gray-100 font-medium transition"
+            <button
+              onClick={onNavigateToAbout}
+              className="text-gray-600 hover:text-blue-600 font-medium transition"
             >
-              Log In
+              About
             </button>
+            {onNavigateToLogin && (
+              <button
+                onClick={onNavigateToLogin}
+                className="px-5 py-2 text-gray-800 border border-gray-200 rounded-lg hover:bg-gray-100 font-medium transition"
+              >
+                Log In
+              </button>
+            )}
           </nav>
         </div>
       </header>
