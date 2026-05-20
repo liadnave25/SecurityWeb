@@ -6,12 +6,13 @@ The primary goal is to implement **Secure SDLC (Software Development Life Cycle)
 
 ## 🚀 Tech Stack
 
-- **Backend:** Java 17, Spring Boot 3.x
-- **Frontend:** React, TypeScript, Vite
+- **Backend:** Java 21, Spring Boot 3.x
+- **Frontend:** React 19, TypeScript, Vite
 - **Security Framework:** Spring Security
 - **Cryptography:** Argon2 (Password Hashing)
-- **Containerization:** Docker
+- **Containerization:** Docker + Kubernetes (Minikube)
 - **Build Tool:** Maven
+- **Database:** PostgreSQL 15
 
 ---
 
@@ -60,6 +61,155 @@ The project includes a comprehensive test suite covering both backend and fronte
 
 ---
 
-## 🐳 Running via Docker
+## 🐳 Running Locally (Docker Compose)
 
-The application is containerized to ensure a consistent, isolated, and secure runtime environment.
+For local development without Kubernetes. Runs PostgreSQL and the Spring Boot backend only — the frontend is served by Vite's dev server.
+
+**Prerequisites:** Docker Desktop running.
+
+```bash
+# Start PostgreSQL
+docker-compose up -d
+
+# Start the backend (in /backend)
+./mvnw spring-boot:run
+
+# Start the frontend (in /frontend)
+npm install
+npm run dev
+```
+
+- Backend: `http://localhost:8080`
+- Frontend: `http://localhost:5173`
+
+---
+
+## ☸️ Running via Kubernetes (Minikube)
+
+The application is fully deployed to a local Kubernetes cluster using Minikube. All three components — PostgreSQL, Spring Boot backend, and React frontend — run as pods inside a dedicated `thiscount` namespace, exposed through an Nginx Ingress at `http://thiscount.local`.
+
+### Architecture
+
+```
+Browser → http://thiscount.local
+              │
+         minikube tunnel (127.0.0.1:80)
+              │
+         Ingress Controller (nginx)
+          /api/*  →  backend-service:8080  →  Spring Boot pod
+                                                    │
+                                            postgres-service:5432
+                                                    │
+                                             PostgreSQL pod + PVC
+             /*  →  frontend-service:80  →  Nginx pod (React build)
+```
+
+### Prerequisites
+
+- Docker Desktop running
+- Minikube installed (`winget install Kubernetes.minikube`)
+- Both images built in Minikube's Docker context (see below)
+- `127.0.0.1  thiscount.local` added to `C:\Windows\System32\drivers\etc\hosts`
+
+### First-time setup
+
+```powershell
+# 1. Start Minikube
+minikube start --driver=docker --memory=4096 --cpus=2
+
+# 2. Enable the Nginx Ingress addon
+minikube addons enable ingress
+
+# 3. Point Docker CLI at Minikube's daemon and build both images
+minikube docker-env | Invoke-Expression
+docker build -t thiscount-backend:latest ./backend
+docker build -t thiscount-frontend:latest ./frontend
+
+# 4. Apply all Kubernetes manifests in order
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/secrets.yaml
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/postgres-pvc.yaml
+kubectl apply -f k8s/postgres-deployment.yaml
+kubectl apply -f k8s/postgres-service.yaml
+kubectl apply -f k8s/backend-deployment.yaml
+kubectl apply -f k8s/backend-service.yaml
+kubectl apply -f k8s/frontend-deployment.yaml
+kubectl apply -f k8s/frontend-service.yaml
+kubectl apply -f k8s/ingress.yaml
+
+# 5. In a separate Admin PowerShell — keep this window open
+minikube tunnel
+```
+
+Wait approximately 90 seconds for all pods to reach `1/1 Running`, then open **`http://thiscount.local`** in the browser.
+
+### Daily usage (after first-time setup)
+
+```powershell
+# Terminal 1 — start the cluster
+minikube start --driver=docker
+
+# Terminal 2 — Admin PowerShell, keep open
+minikube tunnel
+```
+
+Then open `http://thiscount.local`. Your pods and database data persist between restarts.
+
+### Verify the cluster is healthy
+
+```powershell
+kubectl get all -n thiscount
+kubectl get ingress -n thiscount
+```
+
+All three pods (`postgres`, `backend`, `frontend`) should show `1/1 Running`.
+
+### Rebuilding after code changes
+
+```powershell
+minikube docker-env | Invoke-Expression
+docker build -t thiscount-backend:latest ./backend
+kubectl rollout restart deployment/backend -n thiscount
+```
+
+### Tear down
+
+```powershell
+# Remove all K8s resources (pods, services, secrets, PVC)
+kubectl delete namespace thiscount
+
+# Stop the cluster
+minikube stop
+```
+
+For a full explanation of every Kubernetes design decision, see [KUBERNETES-MIGRATION.md](KUBERNETES-MIGRATION.md).
+
+---
+
+## 📁 Project Structure
+
+```
+project/
+├── backend/                    # Spring Boot application
+│   ├── src/
+│   └── Dockerfile              # Multi-stage Maven → JRE 21 build
+├── frontend/                   # React + TypeScript application
+│   ├── src/
+│   ├── Dockerfile              # Multi-stage Node → Nginx build
+│   └── nginx.conf              # SPA routing + /api/* reverse proxy
+├── k8s/                        # Kubernetes manifests
+│   ├── namespace.yaml
+│   ├── secrets.yaml
+│   ├── configmap.yaml
+│   ├── postgres-pvc.yaml
+│   ├── postgres-deployment.yaml
+│   ├── postgres-service.yaml
+│   ├── backend-deployment.yaml
+│   ├── backend-service.yaml
+│   ├── frontend-deployment.yaml
+│   ├── frontend-service.yaml
+│   └── ingress.yaml
+├── docker-compose.yml          # Local dev: PostgreSQL only
+└── KUBERNETES-MIGRATION.md     # Full migration guide with all decisions explained
+```

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: thiscount-config
+  namespace: thiscount
+data:
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-service:5432/thiscount_db"
+  SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+  SPRING_JPA_SHOW_SQL: "false"
+  CORS_ALLOWED_ORIGIN: "http://thiscount.local"
+  POSTGRES_DB: "thiscount_db"
