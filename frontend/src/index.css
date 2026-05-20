@@ -1,3 +1,59 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html, body, #root {
+    background-color: #0D1117;
+    color: #E6EDF3;
+    min-height: 100vh;
+  }
+
+  /* Smooth scrollbar on dark background */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0D1117; }
+  ::-webkit-scrollbar-thumb { background: #30363D; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #484F58; }
+
+  /* Remove blue autofill flash on dark inputs */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #21262D inset;
+    -webkit-text-fill-color: #E6EDF3;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+}
+
+@layer components {
+  /* Reusable dark card */
+  .tc-card {
+    @apply bg-tc-surface border border-tc-border rounded-2xl;
+  }
+
+  /* Reusable dark input */
+  .tc-input {
+    @apply w-full px-4 py-3 rounded-lg bg-tc-elevated border border-tc-border
+           text-tc-text placeholder-tc-faint
+           focus:outline-none focus:border-tc-blue focus:ring-1 focus:ring-tc-blue
+           transition-colors duration-200;
+  }
+
+  /* Primary CTA button base (Framer Motion handles scale) */
+  .tc-btn-primary {
+    @apply bg-tc-blue text-tc-bg font-semibold py-3 px-6 rounded-lg
+           hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed
+           transition-all duration-200 shadow-dark-sm;
+  }
+
+  /* Danger button */
+  .tc-btn-danger {
+    @apply bg-tc-red text-white font-semibold py-2 px-5 rounded-lg
+           hover:brightness-110 transition-all duration-200;
+  }
+
+  /* Role badge */
+  .tc-badge {
+    @apply font-mono text-xs px-2 py-0.5 rounded border;
+  }
+}

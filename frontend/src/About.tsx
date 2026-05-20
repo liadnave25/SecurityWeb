@@ -1,130 +1,208 @@
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import Layout from './Layout';
 
 interface AboutProps {
   onNavigateToLogin: () => void;
+  onNavigateToDashboard: () => void;
 }
 
-const About = ({ onNavigateToLogin }: AboutProps) => {
+const cardVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.35, delay: i * 0.07, ease: 'easeOut' as const },
+  }),
+};
+
+const About = ({ onNavigateToLogin, onNavigateToDashboard }: AboutProps) => {
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    fetch('/api/debug/me', { credentials: 'include' })
+      .then(res => setIsLoggedIn(res.ok))
+      .catch(() => setIsLoggedIn(false));
+  }, []);
+
+  const handleBack = () => isLoggedIn ? onNavigateToDashboard() : onNavigateToLogin();
+  const techStack = [
+    { label: 'Backend', value: 'Java 21 + Spring Boot 3' },
+    { label: 'Frontend', value: 'React 19 + TypeScript + Vite' },
+    { label: 'Security', value: 'Spring Security' },
+    { label: 'Cryptography', value: 'Argon2 Password Hashing' },
+    { label: 'Infrastructure', value: 'Docker + Kubernetes' },
+    { label: 'Build Tool', value: 'Maven' },
+    { label: 'Database', value: 'PostgreSQL 15' },
+    { label: 'CI/CD', value: 'GitHub Actions' },
+  ];
+
+  const securityCards = [
+    {
+      num: '01',
+      title: 'Advanced Identity & Authentication',
+      accent: 'tc-blue',
+      items: [
+        { bold: 'Argon2 Hashing', text: 'Winner of the Password Hashing Competition — replaces legacy MD5/SHA entirely.' },
+        { bold: 'Memory-Hardness', text: 'Configured to require significant RAM, making GPU-based brute force highly impractical.' },
+        { bold: 'Unique Salting', text: 'Every password is cryptographically salted before hashing.' },
+      ],
+    },
+    {
+      num: '02',
+      title: 'Secure File Upload & Validation',
+      accent: 'tc-blue',
+      items: [
+        { bold: 'Strict Validation', text: 'Server-side verification of file types, extensions, and sizes via FileValidationService.' },
+        { bold: 'Magic-Byte Detection', text: 'Apache Tika inspects file content to catch executables disguised as images.' },
+        { bold: 'Boundary Enforcement', text: 'FileUploadConfig ensures uploads stay within safe directory boundaries.' },
+      ],
+    },
+    {
+      num: '03',
+      title: 'Rate Limiting & DoS Protection',
+      accent: 'tc-amber',
+      items: [
+        { bold: 'Bucket4j Token Bucket', text: '3 requests per 5 minutes per user/IP — blocks brute force at the service layer.' },
+        { bold: 'Service Stability', text: 'Protects authentication and sensitive API endpoints from automated attacks.' },
+      ],
+    },
+    {
+      num: '04',
+      title: 'Secure Data Storage & Handling',
+      accent: 'tc-blue',
+      items: [
+        { bold: 'Input Validation', text: 'Server-side sanitization prevents SQL Injection and XSS.' },
+        { bold: 'CSRF Protection', text: 'CookieCsrfTokenRepository — state-changing requests require a valid CSRF token.' },
+        { bold: 'Least Privilege', text: 'Database connections and application roles restricted to minimum permissions.' },
+        { bold: 'Data Privacy', text: 'No user enumeration — unknown email and wrong password return identical errors.' },
+      ],
+    },
+    {
+      num: '05',
+      title: 'Application Security Testing',
+      accent: 'tc-emerald',
+      items: [
+        { bold: 'Unit Tests (JUnit + Mockito)', text: 'FileValidationService and RateLimitingService covered across all branches.' },
+        { bold: 'Integration Tests (MockMvc)', text: 'Full security pipeline tested without a live database.' },
+        { bold: 'Frontend Tests (Vitest + RTL)', text: 'FileUploadComponent covered including error states and network failure.' },
+        { bold: 'CI Pipeline', text: 'GitHub Actions runs all backend and frontend tests on every push.' },
+      ],
+    },
+    {
+      num: '06',
+      title: 'Cloud-Native Deployment',
+      accent: 'tc-purple',
+      items: [
+        { bold: 'Kubernetes (Minikube)', text: 'All three services run as pods in a dedicated namespace with health probes.' },
+        { bold: 'Nginx Ingress', text: 'Single entry point routes /api/* to the backend and /* to the React SPA.' },
+        { bold: 'Secret Management', text: 'Credentials injected via K8s Secrets — never hardcoded or committed.' },
+        { bold: 'Multi-stage Docker Builds', text: 'Minimal production images — no build tools in the final container.' },
+      ],
+    },
+  ];
+
+  const accentBorder: Record<string, string> = {
+    'tc-blue':   'border-tc-blue/30',
+    'tc-amber':  'border-tc-amber/30',
+    'tc-emerald':'border-tc-emerald/30',
+    'tc-purple': 'border-tc-purple/30',
+  };
+  const accentText: Record<string, string> = {
+    'tc-blue':   'text-tc-blue',
+    'tc-amber':  'text-tc-amber',
+    'tc-emerald':'text-tc-emerald',
+    'tc-purple': 'text-tc-purple',
+  };
+  const accentBg: Record<string, string> = {
+    'tc-blue':   'bg-tc-blue/10',
+    'tc-amber':  'bg-tc-amber/10',
+    'tc-emerald':'bg-tc-emerald/10',
+    'tc-purple': 'bg-tc-purple/10',
+  };
+
   return (
-    <Layout onNavigateToLogin={onNavigateToLogin}>
+    <Layout onNavigateToLogin={handleBack} loginLabel={isLoggedIn ? 'Dashboard' : 'Log In'}>
       <div className="max-w-4xl w-full space-y-10 pb-20">
 
         {/* Hero */}
-        <div className="text-center space-y-4">
-          <div className="inline-flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-2xl px-6 py-3">
-            <span className="text-3xl">🛡️</span>
-            <h1 className="text-3xl font-extrabold text-gray-800">
-              <span className="text-blue-600">This</span>Count
-            </h1>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          className="text-center space-y-4"
+        >
+          <div className="inline-flex items-center gap-3 tc-card px-6 py-3 rounded-2xl">
+            <svg className="w-7 h-7 text-tc-blue" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            <span className="text-xl font-bold">
+              <span className="text-tc-blue">This</span><span className="text-tc-text">Count</span>
+            </span>
           </div>
-          <p className="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">
-            A secure web application demonstrating <span className="font-semibold text-blue-600">Secure SDLC</span> principles,
-            protecting against OWASP Top 10 vulnerabilities with robust authentication and data handling.
+          <p className="text-tc-muted text-base max-w-2xl mx-auto leading-relaxed">
+            A secure web application demonstrating{' '}
+            <span className="font-semibold text-tc-blue">Secure SDLC</span> principles —
+            protecting against OWASP Top 10 vulnerabilities with robust authentication, rate limiting, and cloud-native deployment.
           </p>
-        </div>
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={handleBack}
+            className="tc-btn-primary inline-block mt-2"
+          >
+            {isLoggedIn ? 'Back to Dashboard' : 'Go to Login'}
+          </motion.button>
+        </motion.div>
 
         {/* Tech Stack */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-          <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-            🚀 Tech Stack
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {[
-              { label: 'Backend', value: 'Java 17 + Spring Boot 3' },
-              { label: 'Frontend', value: 'React + TypeScript + Vite' },
-              { label: 'Security', value: 'Spring Security' },
-              { label: 'Cryptography', value: 'Argon2 Password Hashing' },
-              { label: 'Containerization', value: 'Docker' },
-              { label: 'Build Tool', value: 'Maven' },
-            ].map(({ label, value }) => (
-              <div key={label} className="bg-blue-50 rounded-xl p-4 border border-blue-100">
-                <p className="text-xs font-bold uppercase tracking-wider text-blue-400 mb-1">{label}</p>
-                <p className="text-sm font-semibold text-gray-700">{value}</p>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.1, ease: 'easeOut' }}
+          className="tc-card p-6"
+        >
+          <h2 className="text-sm font-bold text-tc-muted uppercase tracking-widest mb-5">Tech Stack</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {techStack.map(({ label, value }) => (
+              <div key={label} className="bg-tc-elevated border border-tc-border rounded-xl p-3.5">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-tc-faint mb-1">{label}</p>
+                <p className="text-sm font-semibold text-tc-text leading-snug">{value}</p>
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
-        {/* Security Sections */}
-        <div className="space-y-6">
-          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            🔒 Security Implementation
-          </h2>
-
-          {/* Card 1 */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h3 className="font-bold text-gray-800 text-base mb-3 flex items-center gap-2">
-              <span className="bg-blue-100 text-blue-700 rounded-lg px-2 py-1 text-sm font-mono">1</span>
-              Advanced Identity & Authentication (Argon2)
-            </h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">▸</span><span><strong>Argon2 Hashing:</strong> Passwords are hashed using Argon2, the winner of the Password Hashing Competition — avoiding legacy methods like MD5 or SHA.</span></li>
-              <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">▸</span><span><strong>Memory-Hardness:</strong> Configured to require significant memory, making GPU-based brute force and rainbow table attacks highly impractical.</span></li>
-              <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">▸</span><span><strong>Unique Salting:</strong> Every password is cryptographically salted before hashing.</span></li>
-            </ul>
-          </div>
-
-          {/* Card 2 */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h3 className="font-bold text-gray-800 text-base mb-3 flex items-center gap-2">
-              <span className="bg-blue-100 text-blue-700 rounded-lg px-2 py-1 text-sm font-mono">2</span>
-              Secure File Upload & Validation 📁
-            </h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">▸</span><span><strong>Strict Validation:</strong> Server-side verification of file types, extensions, and sizes via a dedicated <code className="bg-gray-100 px-1 rounded text-xs">FileValidationService</code>.</span></li>
-              <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">▸</span><span><strong>Secure Configuration:</strong> Managed upload properties via <code className="bg-gray-100 px-1 rounded text-xs">FileUploadConfig</code> to ensure files stay within safe directory boundaries.</span></li>
-            </ul>
-          </div>
-
-          {/* Card 3 */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h3 className="font-bold text-gray-800 text-base mb-3 flex items-center gap-2">
-              <span className="bg-blue-100 text-blue-700 rounded-lg px-2 py-1 text-sm font-mono">3</span>
-              Rate Limiting & DoS Protection 🛑
-            </h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">▸</span><span><strong>Brute Force Mitigation:</strong> A <code className="bg-gray-100 px-1 rounded text-xs">RateLimitingService</code> restricts the number of requests per user/IP.</span></li>
-              <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">▸</span><span><strong>Service Stability:</strong> Protects authentication and sensitive API endpoints from automated attacks and resource exhaustion.</span></li>
-            </ul>
-          </div>
-
-          {/* Card 4 */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h3 className="font-bold text-gray-800 text-base mb-3 flex items-center gap-2">
-              <span className="bg-blue-100 text-blue-700 rounded-lg px-2 py-1 text-sm font-mono">4</span>
-              Secure Data Storage & Handling
-            </h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">▸</span><span><strong>Input Validation:</strong> Server-side validation and sanitization prevent SQL Injection and XSS.</span></li>
-              <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">▸</span><span><strong>CSRF Protection:</strong> State-changing requests are protected using Spring Security's token-based CSRF defense.</span></li>
-              <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">▸</span><span><strong>Least Privilege:</strong> Database connections and application roles are restricted to the minimum necessary permissions.</span></li>
-              <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">▸</span><span><strong>Data Privacy:</strong> Sensitive data is handled according to privacy-by-design standards.</span></li>
-            </ul>
-          </div>
-
-          {/* Card 5 */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h3 className="font-bold text-gray-800 text-base mb-3 flex items-center gap-2">
-              <span className="bg-blue-100 text-blue-700 rounded-lg px-2 py-1 text-sm font-mono">5</span>
-              Application Security Testing
-            </h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">▸</span><span><strong>Security Unit Tests:</strong> Verifying authentication logic correctly rejects invalid credentials and handles edge cases.</span></li>
-              <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">▸</span><span><strong>Integration Testing:</strong> Ensuring secure data flow between the Client, Controller, and Database layers.</span></li>
-              <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">▸</span><span><strong>Vulnerability Checks:</strong> Automated tests to detect security misconfigurations in the Spring Boot context.</span></li>
-            </ul>
-          </div>
-
-          {/* Card 6 */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h3 className="font-bold text-gray-800 text-base mb-3 flex items-center gap-2">
-              <span className="bg-blue-100 text-blue-700 rounded-lg px-2 py-1 text-sm font-mono">🐳</span>
-              Running via Docker
-            </h3>
-            <p className="text-sm text-gray-600">
-              The application is containerized to ensure a consistent, isolated, and secure runtime environment across all deployment targets.
-            </p>
-          </div>
+        {/* Security Cards */}
+        <div className="space-y-4">
+          <h2 className="text-sm font-bold text-tc-muted uppercase tracking-widest">Security Implementation</h2>
+          {securityCards.map((card, i) => (
+            <motion.div
+              key={card.num}
+              custom={i}
+              variants={cardVariants}
+              initial="hidden"
+              animate="visible"
+              className={`tc-card p-6 border ${accentBorder[card.accent]}`}
+            >
+              <h3 className="font-bold text-tc-text text-sm mb-4 flex items-center gap-3">
+                <span className={`font-mono text-xs px-2 py-0.5 rounded ${accentBg[card.accent]} ${accentText[card.accent]} border ${accentBorder[card.accent]}`}>
+                  {card.num}
+                </span>
+                {card.title}
+              </h3>
+              <ul className="space-y-2.5">
+                {card.items.map(({ bold, text }) => (
+                  <li key={bold} className="flex items-start gap-2.5 text-sm">
+                    <span className={`mt-0.5 flex-shrink-0 ${accentText[card.accent]}`}>▸</span>
+                    <span className="text-tc-muted">
+                      <strong className="text-tc-text font-semibold">{bold}:</strong> {text}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          ))}
         </div>
 
       </div>

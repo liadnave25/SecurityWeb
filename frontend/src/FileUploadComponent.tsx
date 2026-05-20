@@ -35,7 +35,7 @@ const FileUploadComponent = ({ onSuccess }: FileUploadComponentProps) => {
     if (selectedFile) formData.append('file', selectedFile);
 
     try {
-      const res = await fetch('http://localhost:8080/api/deals/create', {
+      const res = await fetch('/api/deals/create', {
         method: 'POST',
         headers: { 'X-XSRF-TOKEN': getCsrfToken() },
         body: formData,

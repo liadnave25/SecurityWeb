@@ -34,7 +34,10 @@ function App() {
       )}
 
       {currentPage === 'about' && (
-        <About onNavigateToLogin={() => setCurrentPage('login')} />
+        <About
+          onNavigateToLogin={() => setCurrentPage('login')}
+          onNavigateToDashboard={() => setCurrentPage('dashboard')}
+        />
       )}
     </div>
   );
